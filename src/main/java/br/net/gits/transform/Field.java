@@ -5,6 +5,10 @@ import lombok.ToString;
 @ToString
 public class Field {
 
+	public String getPattern() {
+		return pattern;
+	}
+
 	final private int min;
 
 	final private int max;
@@ -18,6 +22,8 @@ public class Field {
 	final private char padCharacter;
 
 	final private PadPosition padPostion;
+
+	final private String pattern;
 
 	public boolean isTrim() {
 		return trim;
@@ -46,13 +52,14 @@ public class Field {
 	}
 
 	public Field(String name, int min, int max, boolean trim, boolean onlyNumbers, int decimal, PadPosition padPostion,
-			char padCharacter) {
+			char padCharacter, String pattern) {
 		checkMinMaxValues(min, max);
 		this.trim = trim;
 		this.decimal = decimal;
 		this.onlyNumbers = onlyNumbers;
 		this.padCharacter = padCharacter;
 		this.padPostion = padPostion;
+		this.pattern = pattern;
 		this.name = name;
 		this.min = min;
 		this.max = max;

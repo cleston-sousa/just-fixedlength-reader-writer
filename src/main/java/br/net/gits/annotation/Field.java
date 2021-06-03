@@ -25,4 +25,6 @@ public @interface Field {
 	char padCharacter() default ' ';
 
 	PadPosition padPostion() default PadPosition.RIGHT;
+	
+	String pattern() default "yyyy-MM-dd";
 }

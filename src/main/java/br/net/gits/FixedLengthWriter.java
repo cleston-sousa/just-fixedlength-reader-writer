@@ -1,12 +1,17 @@
 package br.net.gits;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import br.net.gits.annotation.Line;
@@ -31,12 +36,21 @@ public class FixedLengthWriter {
 	}
 
 	/**
+	 * return current string buffer line
+	 * 
+	 * @return
+	 */
+	public int getLine() {
+		return this.lineCount;
+	}
+
+	/**
 	 * return string from mapped object
 	 * 
 	 * @param mappedObject must have @Line annotation
 	 * @return
 	 */
-	public static String getLine(Object mappedObject) {
+	public static String extractLine(Object mappedObject) {
 
 		if (!mappedObject.getClass().isAnnotationPresent(Line.class)) {
 			throw new ReadException("Invalid Mapper, annotation @Line missing.");
@@ -50,7 +64,7 @@ public class FixedLengthWriter {
 		var fields = fieldClass.stream().map(item -> {
 			var setted = item.getAnnotation(fieldAnnotation);
 			return new Field(item.getName(), setted.min(), setted.max(), setted.trim(), setted.onlyNumbers(),
-					setted.decimal(), setted.padPostion(), setted.padCharacter());
+					setted.decimal(), setted.padPostion(), setted.padCharacter(), setted.pattern());
 		}).collect(Collectors.toList());
 
 		int maxRange = calculateMaxRange(fields);
@@ -74,9 +88,19 @@ public class FixedLengthWriter {
 		for (Field field : fields) {
 			try {
 
-				Object value = BeanUtils.getSimpleProperty(mappedObject, field.getName());
+				Class<?> type = PropertyUtils.getPropertyType(mappedObject, field.getName());
+
+				Object value = PropertyUtils.getProperty(mappedObject, field.getName());
+
+				if (value == null)
+					continue;
 
 				var s = value.toString();
+
+				if (type == LocalDate.class || type == LocalDateTime.class || type == LocalTime.class) {
+					s = DateTimeFormatter.ofPattern(field.getPattern()).format((Temporal) value);
+				}
+
 				if (field.isOnlyNumbers())
 					s = onlyNumbers(s);
 
@@ -114,7 +138,7 @@ public class FixedLengthWriter {
 		lineCount++;
 
 		try {
-			this.sb.append(getLine(mappedObject) + "\n");
+			this.sb.append((this.lineCount > 1 ? "\n" : "") + extractLine(mappedObject));
 		} catch (Exception e) {
 			throw new ReadException(String.format("Found errors at line %d ", lineCount));
 		}

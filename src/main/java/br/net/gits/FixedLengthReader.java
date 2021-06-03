@@ -3,6 +3,10 @@ package br.net.gits;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -72,6 +76,15 @@ public class FixedLengthReader {
 	}
 
 	/**
+	 * return current iterator line
+	 * 
+	 * @return
+	 */
+	public int getLine() {
+		return this.lineCount;
+	}
+
+	/**
 	 * Open itarator
 	 * 
 	 * @return
@@ -105,7 +118,7 @@ public class FixedLengthReader {
 		var fields = fieldClass.stream().map(item -> {
 			var setted = item.getAnnotation(fieldAnnotation);
 			return new Field(item.getName(), setted.min(), setted.max(), setted.trim(), setted.onlyNumbers(),
-					setted.decimal(), setted.padPostion(), setted.padCharacter());
+					setted.decimal(), setted.padPostion(), setted.padCharacter(), setted.pattern());
 		}).collect(Collectors.toList());
 
 		for (Field field : fields) {
@@ -133,8 +146,8 @@ public class FixedLengthReader {
 	 * @param clazz must be annotated with <code>@Line</code>
 	 * @return
 	 */
-	public static Object getLine(String line, Class<?> clazz) {
-		return getLine(line, clazz, 1);
+	public static Object extractObject(String line, Class<?> clazz) {
+		return extractObject(line, clazz, 1);
 	}
 
 	/**
@@ -145,7 +158,7 @@ public class FixedLengthReader {
 	 * @param lineCount
 	 * @return
 	 */
-	public static Object getLine(String line, Class<?> clazz, int lineCount) {
+	public static Object extractObject(String line, Class<?> clazz, int lineCount) {
 
 		if (!clazz.isAnnotationPresent(Line.class)) {
 			throw new ReadException("Invalid Mapper, annotation @Line missing.");
@@ -160,7 +173,7 @@ public class FixedLengthReader {
 		var fields = fieldClass.stream().map(item -> {
 			var setted = item.getAnnotation(fieldAnnotation);
 			return new Field(item.getName(), setted.min(), setted.max(), setted.trim(), setted.onlyNumbers(),
-					setted.decimal(), setted.padPostion(), setted.padCharacter());
+					setted.decimal(), setted.padPostion(), setted.padCharacter(), setted.pattern());
 		}).collect(Collectors.toList());
 		for (Field field : fields) {
 			mapper.fields.put(field.getName(), field);
@@ -214,6 +227,9 @@ public class FixedLengthReader {
 
 		Map<String, String> errors = new HashMap<>();
 		for (Entry<String, String> entryMapped : mapped.entrySet()) {
+
+			var fieldInfo = mapper.fields.get(entryMapped.getKey());
+
 			try {
 
 				Class<?> type = PropertyUtils.getPropertyType(o, entryMapped.getKey());
@@ -239,11 +255,15 @@ public class FixedLengthReader {
 				if (type == BigDecimal.class)
 					PropertyUtils.setProperty(o, entryMapped.getKey(), new BigDecimal(entryMapped.getValue()));
 
+				if (type == LocalDate.class || type == LocalDateTime.class || type == LocalTime.class) {
+					PropertyUtils.setProperty(o, entryMapped.getKey(), LocalDate.parse(entryMapped.getValue(),
+							DateTimeFormatter.ofPattern(fieldInfo.getPattern())));
+				}
+
 				if (type == String.class)
 					PropertyUtils.setProperty(o, entryMapped.getKey(), entryMapped.getValue());
 
 			} catch (Exception e) {
-				var fieldInfo = mapper.fields.get(entryMapped.getKey());
 				errors.put(entryMapped.getKey(), String.format("line position %d to %d , value: [%s] ",
 						fieldInfo.getMin(), fieldInfo.getMax(), entryMapped.getValue()));
 			}

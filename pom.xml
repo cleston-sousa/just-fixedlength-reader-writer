@@ -5,7 +5,7 @@
 	
 	<groupId>io.github.cleston-sousa</groupId>
 	<artifactId>just-fixedlength-reader-writer</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<name>just-fixedlength-reader-writer</name>
 	<description>Small library to read and write fixedlength strings from pojo with annotations</description>
 	<packaging>jar</packaging>
@@ -20,12 +20,6 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 			<version>1.18.20</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-		<dependency>
-		    <groupId>com.fasterxml.jackson.core</groupId>
-		    <artifactId>jackson-databind</artifactId>
-		    <version>2.12.3</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
 		<dependency>
@@ -45,6 +39,49 @@
 		    <artifactId>commons-io</artifactId>
 		    <version>2.9.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+		<dependency>
+		    <groupId>com.fasterxml.jackson.core</groupId>
+		    <artifactId>jackson-databind</artifactId>
+		    <version>2.12.3</version>
+	      <scope>test</scope>
+		</dependency>
+	    <dependency>
+	      <groupId>org.assertj</groupId>
+	      <artifactId>assertj-core</artifactId>
+	      <version>3.19.0</version>
+	      <scope>test</scope>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.hamcrest</groupId>
+	      <artifactId>hamcrest</artifactId>
+	      <version>2.2</version>
+	      <scope>test</scope>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.junit.jupiter</groupId>
+	      <artifactId>junit-jupiter</artifactId>
+	      <version>5.7.2</version>
+			 <exclusions>
+			 	<exclusion>
+			 		<groupId>org.junit.vintage</groupId>
+			 		<artifactId>junit-vintage-engine</artifactId>
+		 		</exclusion>
+	 		</exclusions>
+	      <scope>test</scope>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.mockito</groupId>
+	      <artifactId>mockito-core</artifactId>
+	      <version>3.10.0</version>
+	      <scope>test</scope>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.mockito</groupId>
+	      <artifactId>mockito-junit-jupiter</artifactId>
+	      <version>3.10.0</version>
+	      <scope>test</scope>
+	    </dependency>
 	</dependencies>
 
 	<build>
@@ -60,4 +97,11 @@
 		</plugins>
 	</build>
 
+	<distributionManagement>
+	   <repository>
+	     <id>github</id>
+	     <name>GitHub cleston-sousa Apache Maven Packages</name>
+	     <url>https://maven.pkg.github.com/cleston-sousa/just-fixedlength-reader-writer</url>
+	   </repository>
+	</distributionManagement>
 </project>
